@@ -79,3 +79,6 @@ temp/
 # Nix / direnv
 .direnv/
 result
+
+# Local PR drafting notes
+pull-request-notes/

@@ -1,0 +1,19 @@
+race weekend: {
+  shape: sql_table
+  year : string {constraint: primary_key}
+  round: int {constraint: primary_key}
+  prix date: date {constraint: unique}
+  prix time: time
+  fp1 date: date
+  fp1 time: time
+  fp2 date: date
+  fp2 time: time
+  qualifications date: date
+  qualifications time: time
+}
+
+
+
+style: {
+  fill: transparent
+}

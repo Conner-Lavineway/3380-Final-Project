@@ -1,133 +1,179 @@
--- Refactored implementation-oriented schema.
+-- Refactored implementation-oriented schema with stronger, more portable types.
 --
--- Main design change:
--- - The proposal's `CONTRACT(driverRef, year, round, teamRef, car_number)`
---   relation is turned into a single weak-in-concept entry entity named
---   `race_entry`.
--- - `race_entry` gets a surrogate key (`entry_id`) for convenience.
--- - All weekend participation facts (qualifying, sprint result, grand prix
---   result, laps, pit stops) hang off `race_entry` instead of repeatedly using
---   `(year, round, driverRef)`.
---
+-- Portability notes:
+-- - Uses broadly portable SQL types and constraint syntax so it can be moved to
+--   Microsoft SQL Server with minimal translation.
+-- - Avoids SQLite-specific PRAGMAs and weakly-typed-only design choices.
+-- - Keeps race classification times as text because the source data mixes elapsed
+--   times, gaps, and statuses (for example, '+1 Lap').
+-- - Stores qualifying, lap, fastest-lap, and pit duration values in integer
+--   milliseconds because those are true durations and are easier to compare.
 
-PRAGMA foreign_keys = ON;
-
-CREATE TABLE IF NOT EXISTS circuits (
-    circuit_id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    city TEXT NOT NULL,
-    country TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS drivers (
-    driver_ref TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    nationality TEXT
-);
-
-CREATE TABLE IF NOT EXISTS teams (
-    team_ref TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    nationality TEXT
-);
-
-CREATE TABLE IF NOT EXISTS status (
-    status_id INTEGER PRIMARY KEY,
-    description TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS race_weekend (
-    year INTEGER NOT NULL,
-    round INTEGER NOT NULL,
+CREATE TABLE circuits (
     circuit_id INTEGER NOT NULL,
-    prix_date TEXT NOT NULL,
-    prix_time TEXT,
-    fp1_date TEXT,
-    fp1_time TEXT,
-    qual_date TEXT,
-    qual_time TEXT,
-    PRIMARY KEY (year, round),
-    FOREIGN KEY (circuit_id) REFERENCES circuits(circuit_id)
+    name VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    CONSTRAINT PK001 PRIMARY KEY (circuit_id)
 );
 
-CREATE TABLE IF NOT EXISTS sprint_weekend (
-    year INTEGER NOT NULL,
-    round INTEGER NOT NULL,
-    sprint_date TEXT NOT NULL,
-    sprint_time TEXT,
-    PRIMARY KEY (year, round),
-    FOREIGN KEY (year, round) REFERENCES race_weekend(year, round)
+CREATE TABLE drivers (
+    driver_ref VARCHAR(64) NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    nationality VARCHAR(80),
+    CONSTRAINT PK002 PRIMARY KEY (driver_ref)
 );
 
-CREATE TABLE IF NOT EXISTS regular_weekend (
-    year INTEGER NOT NULL,
-    round INTEGER NOT NULL,
-    fp3_date TEXT NOT NULL,
-    fp3_time TEXT,
-    PRIMARY KEY (year, round),
-    FOREIGN KEY (year, round) REFERENCES race_weekend(year, round)
+CREATE TABLE teams (
+    team_ref VARCHAR(64) NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    nationality VARCHAR(80),
+    CONSTRAINT PK003 PRIMARY KEY (team_ref)
 );
 
-CREATE TABLE IF NOT EXISTS race_entry (
-    entry_id INTEGER PRIMARY KEY,
-    year INTEGER NOT NULL,
-    round INTEGER NOT NULL,
-    driver_ref TEXT NOT NULL,
-    team_ref TEXT NOT NULL,
-    car_number INTEGER NOT NULL,
-    UNIQUE (year, round, driver_ref),
-    UNIQUE (year, round, car_number),
-    FOREIGN KEY (year, round) REFERENCES race_weekend(year, round),
-    FOREIGN KEY (driver_ref) REFERENCES drivers(driver_ref),
-    FOREIGN KEY (team_ref) REFERENCES teams(team_ref)
-);
-
-CREATE TABLE IF NOT EXISTS qual_result (
-    entry_id INTEGER PRIMARY KEY,
-    q1 TEXT,
-    q2 TEXT,
-    q3 TEXT,
-    FOREIGN KEY (entry_id) REFERENCES race_entry(entry_id)
-);
-
-CREATE TABLE IF NOT EXISTS sprint_perf (
-    entry_id INTEGER PRIMARY KEY,
-    race_time TEXT,
-    num_laps INTEGER,
-    fastest_lap_time TEXT,
-    fastest_lap_num INTEGER,
+CREATE TABLE status (
     status_id INTEGER NOT NULL,
-    FOREIGN KEY (entry_id) REFERENCES race_entry(entry_id),
-    FOREIGN KEY (status_id) REFERENCES status(status_id)
+    description VARCHAR(100) NOT NULL,
+    CONSTRAINT PK004 PRIMARY KEY (status_id)
 );
 
-CREATE TABLE IF NOT EXISTS prix_perf (
-    entry_id INTEGER PRIMARY KEY,
-    race_time TEXT,
-    num_laps INTEGER,
-    fastest_lap_time TEXT,
-    fastest_lap_num INTEGER,
+CREATE TABLE race_weekend (
+    year SMALLINT NOT NULL,
+    round SMALLINT NOT NULL,
+    circuit_id INTEGER NOT NULL,
+    prix_date DATE NOT NULL,
+    prix_time TIME,
+    fp1_date DATE,
+    fp1_time TIME,
+    qual_date DATE,
+    qual_time TIME,
+    CONSTRAINT PK005 PRIMARY KEY (year, round),
+    CONSTRAINT FK001 FOREIGN KEY (circuit_id)
+        REFERENCES circuits(circuit_id),
+    CONSTRAINT CK001 CHECK (year >= 1950),
+    CONSTRAINT CK002 CHECK (round > 0)
+);
+
+CREATE TABLE sprint_weekend (
+    year SMALLINT NOT NULL,
+    round SMALLINT NOT NULL,
+    sprint_date DATE NOT NULL,
+    sprint_time TIME,
+    CONSTRAINT PK006 PRIMARY KEY (year, round),
+    CONSTRAINT FK002 FOREIGN KEY (year, round)
+        REFERENCES race_weekend(year, round),
+    CONSTRAINT CK003 CHECK (year >= 1950),
+    CONSTRAINT CK004 CHECK (round > 0)
+);
+
+CREATE TABLE regular_weekend (
+    year SMALLINT NOT NULL,
+    round SMALLINT NOT NULL,
+    fp3_date DATE NOT NULL,
+    fp3_time TIME,
+    CONSTRAINT PK007 PRIMARY KEY (year, round),
+    CONSTRAINT FK003 FOREIGN KEY (year, round)
+        REFERENCES race_weekend(year, round),
+    CONSTRAINT CK005 CHECK (year >= 1950),
+    CONSTRAINT CK006 CHECK (round > 0)
+);
+
+CREATE TABLE race_entry (
+    entry_id INTEGER NOT NULL,
+    year SMALLINT NOT NULL,
+    round SMALLINT NOT NULL,
+    driver_ref VARCHAR(64) NOT NULL,
+    team_ref VARCHAR(64) NOT NULL,
+    car_number SMALLINT NOT NULL,
+    CONSTRAINT PK008 PRIMARY KEY (entry_id),
+    CONSTRAINT FK004 FOREIGN KEY (year, round)
+        REFERENCES race_weekend(year, round),
+    CONSTRAINT FK005 FOREIGN KEY (driver_ref)
+        REFERENCES drivers(driver_ref),
+    CONSTRAINT FK006 FOREIGN KEY (team_ref)
+        REFERENCES teams(team_ref),
+    CONSTRAINT CK007 CHECK (year >= 1950),
+    CONSTRAINT CK008 CHECK (round > 0),
+    CONSTRAINT CK009 CHECK (car_number >= 0)
+);
+
+CREATE TABLE qual_result (
+    entry_id INTEGER NOT NULL,
+    q1_ms INTEGER,
+    q2_ms INTEGER,
+    q3_ms INTEGER,
+    CONSTRAINT PK009 PRIMARY KEY (entry_id),
+    CONSTRAINT FK007 FOREIGN KEY (entry_id)
+        REFERENCES race_entry(entry_id)
+        ON DELETE CASCADE,
+    CONSTRAINT CK010 CHECK (q1_ms IS NULL OR q1_ms > 0),
+    CONSTRAINT CK011 CHECK (q2_ms IS NULL OR q2_ms > 0),
+    CONSTRAINT CK012 CHECK (q3_ms IS NULL OR q3_ms > 0)
+);
+
+CREATE TABLE sprint_perf (
+    entry_id INTEGER NOT NULL,
+    race_time VARCHAR(32),
+    num_laps SMALLINT,
+    fastest_lap_time_ms INTEGER,
+    fastest_lap_num SMALLINT,
     status_id INTEGER NOT NULL,
-    FOREIGN KEY (entry_id) REFERENCES race_entry(entry_id),
-    FOREIGN KEY (status_id) REFERENCES status(status_id)
+    CONSTRAINT PK010 PRIMARY KEY (entry_id),
+    CONSTRAINT FK008 FOREIGN KEY (entry_id)
+        REFERENCES race_entry(entry_id)
+        ON DELETE CASCADE,
+    CONSTRAINT FK009 FOREIGN KEY (status_id)
+        REFERENCES status(status_id),
+    CONSTRAINT CK013 CHECK (num_laps IS NULL OR num_laps >= 0),
+    CONSTRAINT CK014 CHECK (fastest_lap_num IS NULL OR fastest_lap_num > 0),
+    CONSTRAINT CK015 CHECK (fastest_lap_time_ms IS NULL OR fastest_lap_time_ms > 0)
 );
 
-CREATE TABLE IF NOT EXISTS lap_info (
+CREATE TABLE prix_perf (
     entry_id INTEGER NOT NULL,
-    lap_num INTEGER NOT NULL,
-    position INTEGER,
-    lap_time TEXT,
-    PRIMARY KEY (entry_id, lap_num),
-    FOREIGN KEY (entry_id) REFERENCES race_entry(entry_id)
+    race_time VARCHAR(32),
+    num_laps SMALLINT,
+    fastest_lap_time_ms INTEGER,
+    fastest_lap_num SMALLINT,
+    status_id INTEGER NOT NULL,
+    CONSTRAINT PK011 PRIMARY KEY (entry_id),
+    CONSTRAINT FK010 FOREIGN KEY (entry_id)
+        REFERENCES race_entry(entry_id)
+        ON DELETE CASCADE,
+    CONSTRAINT FK011 FOREIGN KEY (status_id)
+        REFERENCES status(status_id),
+    CONSTRAINT CK016 CHECK (num_laps IS NULL OR num_laps >= 0),
+    CONSTRAINT CK017 CHECK (fastest_lap_num IS NULL OR fastest_lap_num > 0),
+    CONSTRAINT CK018 CHECK (fastest_lap_time_ms IS NULL OR fastest_lap_time_ms > 0)
 );
 
-CREATE TABLE IF NOT EXISTS pit_stop (
+CREATE TABLE lap_info (
     entry_id INTEGER NOT NULL,
-    lap_num INTEGER NOT NULL,
-    stop_time TEXT,
-    duration REAL,
-    PRIMARY KEY (entry_id, lap_num),
-    FOREIGN KEY (entry_id) REFERENCES race_entry(entry_id),
-    FOREIGN KEY (entry_id, lap_num) REFERENCES lap_info(entry_id, lap_num)
+    lap_num SMALLINT NOT NULL,
+    position SMALLINT,
+    lap_time_ms INTEGER,
+    CONSTRAINT PK012 PRIMARY KEY (entry_id, lap_num),
+    CONSTRAINT FK012 FOREIGN KEY (entry_id)
+        REFERENCES race_entry(entry_id)
+        ON DELETE CASCADE,
+    CONSTRAINT CK019 CHECK (lap_num > 0),
+    CONSTRAINT CK020 CHECK (position IS NULL OR position > 0),
+    CONSTRAINT CK021 CHECK (lap_time_ms IS NULL OR lap_time_ms > 0)
 );
 
+CREATE TABLE pit_stop (
+    entry_id INTEGER NOT NULL,
+    stop_no SMALLINT NOT NULL,
+    lap_num SMALLINT NOT NULL,
+    stop_time TIME,
+    duration_ms INTEGER,
+    CONSTRAINT PK013 PRIMARY KEY (entry_id, stop_no),
+    CONSTRAINT FK013 FOREIGN KEY (entry_id)
+        REFERENCES race_entry(entry_id)
+        ON DELETE CASCADE,
+    CONSTRAINT FK014 FOREIGN KEY (entry_id, lap_num)
+        REFERENCES lap_info(entry_id, lap_num),
+    CONSTRAINT CK022 CHECK (stop_no > 0),
+    CONSTRAINT CK023 CHECK (lap_num > 0),
+    CONSTRAINT CK024 CHECK (duration_ms IS NULL OR duration_ms >= 0)
+);

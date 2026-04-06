@@ -47,6 +47,11 @@
           jdk21
           maven
 
+          # Container tooling for the local SQL Server dev setup
+          docker
+          docker-compose
+          sqlcmd
+
           # SQL quality-of-life tools
           # - sqlite: quick local DB inspection
           # - litecli: nicer SQLite prompt with completion
@@ -63,8 +68,10 @@
           echo "Entered the COMP 3380 Java dev shell."
           echo "Java:   $(java -version 2>&1 | head -n 1)"
           echo "Maven:  $(mvn -v 2>/dev/null | head -n 1)"
+          echo "Docker: $(docker --version 2>/dev/null || echo unavailable)"
+          echo "sqlcmd: $(sqlcmd -? >/dev/null 2>&1 && echo available || echo unavailable)"
           echo
-          echo "Useful SQL tools in this shell: sqlite3, litecli"
+          echo "Useful tools in this shell: docker, docker-compose, sqlcmd, sqlite3, litecli"
         '';
       };
     });

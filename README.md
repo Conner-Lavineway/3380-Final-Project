@@ -130,3 +130,33 @@ This repo includes a `flake.nix` and `flake.lock` so anyone using Nix can get th
 - You can override paths with `--source-db`, `--target-db`, `--log-file`, and `--schema`
 - Historical multi-entry results are kept
 - The schema uses portable types (`DATE`, `TIME`, `VARCHAR`, `SMALLINT`) and stores lap-style durations in integer milliseconds
+
+## Local SQL Server replica
+
+- Uses the official `mcr.microsoft.com/mssql/server:2022-latest` image directly
+- It provisions a SQL Server instance on port `1433`
+- It keeps the image startup path as close to upstream defaults as possible
+- It keeps `sa` as the only user; no extra app login is created
+- It stores database files in a Docker-managed named volume so the `mssql` container user can write to them without host permission issues
+
+### Start it
+
+- Run `docker compose up`
+- No `.env` file is required for local development
+- If you want to override the defaults, copy `.env.example` to `.env` and change the values there
+- The server starts with SQL Server's default system databases only; create an application database yourself if you need one
+- To reset the instance from scratch, run `docker compose down -v`
+
+### Local connection settings
+
+- Host: `localhost`
+- Port: `1433`
+- Database: `master` by default, unless you create another one
+- Username: `sa`
+- Password: `LocalSqlServerPassw0rd!` by default
+
+Example JDBC URL:
+
+```text
+jdbc:sqlserver://localhost:1433;database=master;user=sa;password=LocalSqlServerPassw0rd!;encrypt=true;trustServerCertificate=true;loginTimeout=30;
+```

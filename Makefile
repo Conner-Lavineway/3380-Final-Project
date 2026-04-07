@@ -17,13 +17,13 @@ DB_PASSWORD ?= LocalSqlServerPassw0rd!
 DB_ENCRYPT ?= true
 DB_TRUST_SERVER_CERTIFICATE ?= true
 
-REMOTE_DB_HOST ?= uraniam.cs.umanitoba.cs
-REMOTE_DB_PORT ?= 
+REMOTE_DB_HOST ?= uranium.cs.umanitoba.ca
+REMOTE_DB_PORT ?= 1433
 REMOTE_DB_NAME ?= cs338015
-REMOTE_DB_USER ?= rajabisa
-REMOTE_DB_PASSWORD ?= 7966878
+REMOTE_DB_USER ?= 
+REMOTE_DB_PASSWORD ?= 
 REMOTE_DB_ENCRYPT ?= true
-REMOTE_DB_TRUST_SERVER_CERTIFICATE ?= false
+REMOTE_DB_TRUST_SERVER_CERTIFICATE ?= true
 
 SQLITE_REPLICA ?= dbs/F1_refactored.db
 SCHEMA_PATH ?= schema/refactored_race_entry_schema.sql
@@ -62,7 +62,7 @@ DB_ENCRYPT := $(REMOTE_DB_ENCRYPT)
 DB_TRUST_SERVER_CERTIFICATE := $(REMOTE_DB_TRUST_SERVER_CERTIFICATE)
 endef
 
-.PHONY: help deps db-up db-down db-reset db-load db-databases db-tables db-show-config db-use-local db-use-remote cli-build cli-run cli-run-remote run-remote clean deps-clean
+.PHONY: help deps db-up db-down db-reset db-load db-databases db-tables db-show-config db-use-local db-use-remote db-clear-profile cli-build cli-run cli-run-remote run-remote clean deps-clean
 
 help:
 	@printf "%s\n" \
@@ -77,9 +77,10 @@ help:
 	  "  make db-show-config  Show the active DB connection settings" \
 	  "  make db-use-local    Persist the local SQL Server settings as defaults" \
 	  "  make db-use-remote   Persist REMOTE_DB_* settings as the active defaults" \
+	  "  make db-clear-profile Remove any saved DB profile overrides" \
 	  "  make cli-build     Compile the Java CLI classes" \
 	  "  make cli-run       Build and run the Java CLI" \
-	  "  make run-remote    Prompt for the remote DB password and run the Java CLI" \
+	  "  make run-remote    Prompt for the remote DB username and password and run the Java CLI" \
 	  "  make clean         Remove compiled Java output" \
 	  "  make deps-clean    Remove downloaded JDBC jars"
 
@@ -124,6 +125,10 @@ db-use-remote:
 	$(file >$(DB_PROFILE_FILE),$(REMOTE_DB_PROFILE_CONTENT))
 	@printf "Saved remote DB defaults to %s\n" "$(DB_PROFILE_FILE)"
 
+db-clear-profile:
+	rm -f $(DB_PROFILE_FILE)
+	@printf "Removed %s\n" "$(DB_PROFILE_FILE)"
+
 db-load: cli-build
 	$(JAVA) -cp "$(BUILD_DIR):$(LIB_DIR)/*" $(LOADER_CLASS) \
 	  --host $(DB_HOST) \
@@ -165,15 +170,17 @@ cli-run: cli-build
 
 cli-run-remote: cli-build
 	@:$(if $(strip $(REMOTE_DB_HOST)),,$(error REMOTE_DB_HOST is required))
-	@:$(if $(strip $(REMOTE_DB_USER)),,$(error REMOTE_DB_USER is required))
-	@read -rsp "Remote DB password for $(REMOTE_DB_USER)@$(REMOTE_DB_HOST): " remote_db_password; \
+	@read -rp "Remote DB username$(if $(strip $(REMOTE_DB_USER)), [$(REMOTE_DB_USER)],): " remote_db_user; \
+	  if [[ -z "$$remote_db_user" ]]; then remote_db_user="$(REMOTE_DB_USER)"; fi; \
+	  if [[ -z "$$remote_db_user" ]]; then echo "Remote DB username is required" >&2; exit 1; fi; \
+	  read -rsp "Remote DB password for $$remote_db_user@$(REMOTE_DB_HOST): " remote_db_password; \
 	  echo; \
 	  export F1_DB_PASSWORD="$$remote_db_password"; \
 	  $(JAVA) -cp "$(BUILD_DIR):$(LIB_DIR)/*" $(MAIN_CLASS) \
 	    --host $(REMOTE_DB_HOST) \
 	    --port $(REMOTE_DB_PORT) \
 	    --database $(REMOTE_DB_NAME) \
-	    --username $(REMOTE_DB_USER) \
+	    --username "$$remote_db_user" \
 	    --encrypt $(REMOTE_DB_ENCRYPT) \
 	    --trust-server-certificate $(REMOTE_DB_TRUST_SERVER_CERTIFICATE) \
 	    --project-root $(CURDIR) \

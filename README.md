@@ -207,6 +207,6 @@ make cli-run DB_NAME=cs338015 DB_PASSWORD='LocalSqlServerPassw0rd!'
 - `make db-use-remote REMOTE_DB_HOST=... REMOTE_DB_USER=... REMOTE_DB_PASSWORD=...` switches the Makefile defaults to a remote SQL Server profile
 - `make cli-build` compiles the Java CLI classes into `build/classes`
 - `make cli-run` builds and launches the Java CLI
-- `make run-remote REMOTE_DB_USER=...` prompts for the remote password at runtime and launches the Java CLI against the remote SQL Server without saving the password
+- `make run-remote` prompts for the remote username and password at runtime and launches the Java CLI against the remote SQL Server without saving either one
 - `make clean` removes compiled Java output
 - `make deps-clean` removes the downloaded JDBC jars

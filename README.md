@@ -202,7 +202,11 @@ make cli-run DB_NAME=cs338015 DB_PASSWORD='LocalSqlServerPassw0rd!'
 - `make db-load` rebuilds and loads the SQL Server database from `dbs/F1_refactored.db`
 - `make db-databases` lists visible SQL Server databases
 - `make db-tables` lists the base tables in the target database
+- `make db-show-config` prints the currently active DB connection defaults
+- `make db-use-local` switches the Makefile defaults back to the local Docker SQL Server
+- `make db-use-remote REMOTE_DB_HOST=... REMOTE_DB_USER=... REMOTE_DB_PASSWORD=...` switches the Makefile defaults to a remote SQL Server profile
 - `make cli-build` compiles the Java CLI classes into `build/classes`
 - `make cli-run` builds and launches the Java CLI
+- `make run-remote REMOTE_DB_USER=...` prompts for the remote password at runtime and launches the Java CLI against the remote SQL Server without saving the password
 - `make clean` removes compiled Java output
 - `make deps-clean` removes the downloaded JDBC jars

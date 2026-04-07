@@ -45,7 +45,11 @@
         packages = with pkgs; [
           # Java toolchain
           jdk21
-          maven
+          jdt-language-server
+          curl
+
+          # Python tooling for the legacy SQLite migration script
+          python3
 
           # Container tooling for the local SQL Server dev setup
           docker
@@ -55,23 +59,26 @@
           # SQL quality-of-life tools
           # - sqlite: quick local DB inspection
           # - litecli: nicer SQLite prompt with completion
+          # - usql: nicer cross-database SQL CLI, including SQL Server
           sqlite
           litecli
+          usql
         ];
 
         # These environment variables make Java tooling work more predictably.
         JAVA_HOME = "${pkgs.jdk21}";
 
         shellHook = ''
-          export MAVEN_OPTS="-Dmaven.repo.local=$PWD/.m2/repository"
-
           echo "Entered the COMP 3380 Java dev shell."
           echo "Java:   $(java -version 2>&1 | head -n 1)"
-          echo "Maven:  $(mvn -v 2>/dev/null | head -n 1)"
+          echo "Python: $(python3 --version 2>&1)"
           echo "Docker: $(docker --version 2>/dev/null || echo unavailable)"
           echo "sqlcmd: $(sqlcmd -? >/dev/null 2>&1 && echo available || echo unavailable)"
+          echo "usql:   $(usql --version >/dev/null 2>&1 && echo available || echo unavailable)"
+          echo "jdtls:  $(command -v jdtls >/dev/null 2>&1 && echo available || echo unavailable)"
+          echo "curl:   $(curl --version >/dev/null 2>&1 && echo available || echo unavailable)"
           echo
-          echo "Useful tools in this shell: docker, docker-compose, sqlcmd, sqlite3, litecli"
+          echo "Useful tools in this shell: docker, docker-compose, sqlcmd, usql, jdtls, curl, python3, sqlite3, litecli"
         '';
       };
     });

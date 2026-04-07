@@ -141,11 +141,12 @@ This repo includes a `flake.nix` and `flake.lock` so anyone using Nix can get th
 
 ### Start it
 
-- Run `docker compose up`
+- Run `make db-up`
 - No `.env` file is required for local development
 - If you want to override the defaults, copy `.env.example` to `.env` and change the values there
 - The server starts with SQL Server's default system databases only; create an application database yourself if you need one
-- To reset the instance from scratch, run `docker compose down -v`
+- To stop the container, run `make db-down`
+- To reset the instance from scratch, run `make db-reset`
 
 ### Local connection settings
 
@@ -160,3 +161,48 @@ Example JDBC URL:
 ```text
 jdbc:sqlserver://localhost:1433;database=master;user=sa;password=LocalSqlServerPassw0rd!;encrypt=true;trustServerCertificate=true;loginTimeout=30;
 ```
+
+### Load the refactored SQLite replica into SQL Server
+
+- Start SQL Server with `make db-up`
+- Run `make db-load`
+- Default target DB: `cs338015`
+- To choose another target DB, run `make db-load DB_NAME=your_db_name`
+- The loader is now a Java program that reads `dbs/F1_refactored.db` through SQLite JDBC and writes to SQL Server through the Microsoft JDBC driver
+- The `Makefile` assumes `docker`, `java`, `javac`, `curl`, and `sqlcmd` are already available on your machine
+- `make deps` downloads the JDBC jars into `lib/` if they are missing
+
+## Java CLI interface
+
+- Build the Java CLI with `make cli-build`
+- Run the Java CLI with `make cli-run`
+- The build uses plain `javac` and `java`; there is no Maven workflow on this branch
+- The CLI defaults to the local SQL Server replica at `localhost:1433`, database `cs338015`
+- Override connection settings with Make variables, for example:
+
+```bash
+make cli-run DB_NAME=cs338015 DB_PASSWORD='LocalSqlServerPassw0rd!'
+```
+
+- The CLI includes:
+
+  * 12 analyst-oriented query screens
+  * safe parameterized SQL only
+  * schema inspection for every table
+  * paged table browsing for every table
+  * delete-all and repopulate maintenance actions
+
+## Make targets
+
+- `make help` shows the supported workflow
+- `make deps` downloads the JDBC jars into `lib/`
+- `make db-up` starts the local SQL Server container
+- `make db-down` stops the local SQL Server container
+- `make db-reset` removes the local SQL Server container and volume
+- `make db-load` rebuilds and loads the SQL Server database from `dbs/F1_refactored.db`
+- `make db-databases` lists visible SQL Server databases
+- `make db-tables` lists the base tables in the target database
+- `make cli-build` compiles the Java CLI classes into `build/classes`
+- `make cli-run` builds and launches the Java CLI
+- `make clean` removes compiled Java output
+- `make deps-clean` removes the downloaded JDBC jars

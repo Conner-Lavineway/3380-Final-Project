@@ -119,3 +119,14 @@ This repo includes a `flake.nix` and `flake.lock` so anyone using Nix can get th
 - Enter the shell with `nix develop`
 - Leave it with `exit`
 - If you do not use Nix, you can ignore these files safely
+
+## Legacy DB migration
+
+- The legacy SQLite dataset lives at `dbs/F1_original.db`
+- The refactored target schema lives at `schema/refactored_race_entry_schema.sql`
+- Run the migration with `python3 scripts/migrate_old_f1_db.py --overwrite`
+- Default output DB: `dbs/F1_refactored.db`
+- Default log: `dbs/F1_migration.log`
+- You can override paths with `--source-db`, `--target-db`, `--log-file`, and `--schema`
+- Historical multi-entry results are kept
+- The schema uses portable types (`DATE`, `TIME`, `VARCHAR`, `SMALLINT`) and stores lap-style durations in integer milliseconds

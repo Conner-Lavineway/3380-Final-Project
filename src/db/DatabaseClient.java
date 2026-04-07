@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+// This class owns the live SQL Server connection used by the CLI.
+// It contains the small set of DB operations the rest of the app needs.
 public final class DatabaseClient implements AutoCloseable {
     private final AppConfig config;
     private final Connection connection;
@@ -176,6 +178,8 @@ public final class DatabaseClient implements AutoCloseable {
         }
     }
 
+    // Menu prompts use small query result lists, so this helper converts a
+    // two-column result set into Option objects that can be shown to the user.
     private List<Option> optionsFromQuery(String sql, StatementBinder binder) throws SQLException {
         CachedTable table = query(sql, binder);
         List<Option> options = new ArrayList<>(table.rows().size());

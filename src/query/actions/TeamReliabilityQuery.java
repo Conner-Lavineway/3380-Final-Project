@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class TeamReliabilityQuery extends BaseQueryAction {
+public final class TeamReliabilityQuery extends QueryAction {
     public TeamReliabilityQuery() {
         super("Team reliability leaderboard for a selected season");
     }

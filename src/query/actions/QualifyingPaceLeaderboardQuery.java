@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class QualifyingPaceLeaderboardQuery extends BaseQueryAction {
+public final class QualifyingPaceLeaderboardQuery extends QueryAction {
     public QualifyingPaceLeaderboardQuery() {
         super("Qualifying pace leaderboard for a selected season");
     }

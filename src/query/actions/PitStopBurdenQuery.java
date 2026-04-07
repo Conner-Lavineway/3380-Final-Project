@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class PitStopBurdenQuery extends BaseQueryAction {
+public final class PitStopBurdenQuery extends QueryAction {
     public PitStopBurdenQuery() {
         super("Pit-stop burden by team for a selected season");
     }

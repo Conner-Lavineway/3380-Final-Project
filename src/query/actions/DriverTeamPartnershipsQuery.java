@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class DriverTeamPartnershipsQuery extends BaseQueryAction {
+public final class DriverTeamPartnershipsQuery extends QueryAction {
     public DriverTeamPartnershipsQuery() {
         super("Longest-running driver/team partnerships");
     }

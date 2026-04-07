@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class CircuitFrequencyQuery extends BaseQueryAction {
+public final class CircuitFrequencyQuery extends QueryAction {
     public CircuitFrequencyQuery() {
         super("Circuits with the most Grand Prix weekends");
     }

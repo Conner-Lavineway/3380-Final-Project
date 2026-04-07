@@ -1,5 +1,7 @@
 import java.util.List;
 
+// This is the single place to see which analyst queries exist and in what
+// order they appear in the menu.
 public final class QueryCatalog {
     private QueryCatalog() {
     }

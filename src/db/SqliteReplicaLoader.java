@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+// Rebuilds the SQL Server database from the local SQLite replica.
+// This is the Java replacement for the older Python loader.
 public final class SqliteReplicaLoader {
     private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("[A-Za-z0-9_]+");
 
@@ -69,6 +71,7 @@ public final class SqliteReplicaLoader {
         return DriverManager.getConnection(config.jdbcUrl());
     }
 
+    // The SQL Server database may not exist yet on a fresh local instance.
     private void ensureDatabaseExists() throws SQLException {
         try (Connection master = DriverManager.getConnection(config.jdbcUrlForDatabase("master"));
              PreparedStatement existsStatement = master.prepareStatement("SELECT DB_ID(?)");
@@ -130,6 +133,7 @@ public final class SqliteReplicaLoader {
         System.out.println("Schema rebuilt in " + formatElapsed(start) + ".");
     }
 
+    // Tables must load in dependency order because of foreign keys.
     private void loadAllTables(Connection source, Connection target) throws SQLException {
         for (String tableName : ProjectSchema.TABLE_ORDER) {
             Instant start = Instant.now();
@@ -193,6 +197,7 @@ public final class SqliteReplicaLoader {
         System.out.println("Indexes created in " + formatElapsed(start) + ".");
     }
 
+    // The schema file is normal SQL with semicolon-separated statements.
     private static List<String> splitSqlStatements(String sqlText) {
         List<String> statements = new ArrayList<>();
         StringBuilder current = new StringBuilder();

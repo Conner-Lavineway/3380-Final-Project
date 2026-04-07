@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class CircuitAttritionQuery extends BaseQueryAction {
+public final class CircuitAttritionQuery extends QueryAction {
     public CircuitAttritionQuery() {
         super("Circuit attrition hotspots across the dataset");
     }

@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class DriverCareerSummaryQuery extends BaseQueryAction {
+public final class DriverCareerSummaryQuery extends QueryAction {
     public DriverCareerSummaryQuery() {
         super("Career summary for a selected driver");
     }

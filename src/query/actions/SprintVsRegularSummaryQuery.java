@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class SprintVsRegularSummaryQuery extends BaseQueryAction {
+public final class SprintVsRegularSummaryQuery extends QueryAction {
     public SprintVsRegularSummaryQuery() {
         super("Sprint versus regular season summary");
     }

@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class SeasonCalendarQuery extends BaseQueryAction {
+public final class SeasonCalendarQuery extends QueryAction {
     public SeasonCalendarQuery() {
         super("Season calendar for a selected year");
     }

@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class LapConsistencyQuery extends BaseQueryAction {
+public final class LapConsistencyQuery extends QueryAction {
     public LapConsistencyQuery() {
         super("Lap consistency for a selected race weekend");
     }

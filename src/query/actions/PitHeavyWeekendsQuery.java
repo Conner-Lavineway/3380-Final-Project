@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class PitHeavyWeekendsQuery extends BaseQueryAction {
+public final class PitHeavyWeekendsQuery extends QueryAction {
     public PitHeavyWeekendsQuery() {
         super("Most pit-heavy race weekends for a selected season");
     }

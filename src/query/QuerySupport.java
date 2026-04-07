@@ -1,6 +1,8 @@
 import java.sql.SQLException;
 import java.util.List;
 
+// Shared helpers used by the query classes so each query file can stay short:
+// prompt for a season/driver and print the resulting table.
 public final class QuerySupport {
     private QuerySupport() {
     }

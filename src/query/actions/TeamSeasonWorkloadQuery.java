@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public final class TeamSeasonWorkloadQuery extends BaseQueryAction {
+public final class TeamSeasonWorkloadQuery extends QueryAction {
     public TeamSeasonWorkloadQuery() {
         super("Team workload summary for a selected season");
     }

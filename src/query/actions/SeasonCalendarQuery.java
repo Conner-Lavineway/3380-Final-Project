@@ -14,7 +14,7 @@ public final class SeasonCalendarQuery extends QueryAction {
                 SELECT rw.round,
                        c.name AS circuit,
                        c.country,
-                       rw.prix_date,
+                       rw.prix_date as 'prix date',
                        CASE WHEN sw.year IS NULL THEN 'Regular' ELSE 'Sprint' END AS weekend_type
                 FROM race_weekend rw
                 JOIN circuits c ON c.circuit_id = rw.circuit_id

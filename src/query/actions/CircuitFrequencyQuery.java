@@ -13,13 +13,13 @@ public final class CircuitFrequencyQuery extends QueryAction {
                 SELECT TOP 15
                        c.name AS circuit,
                        c.country,
-                       COUNT(*) AS grand_prix_weekends,
-                       MIN(rw.year) AS first_year,
-                       MAX(rw.year) AS last_year
+                       COUNT(*) AS 'grand prix weekends',
+                       MIN(rw.year) AS 'first year',
+                       MAX(rw.year) AS 'last year'
                 FROM race_weekend rw
                 JOIN circuits c ON c.circuit_id = rw.circuit_id
                 GROUP BY c.name, c.country
-                ORDER BY grand_prix_weekends DESC, last_year DESC, circuit
+                ORDER BY "grand prix weekends" DESC, "last year" DESC, circuit
                 """,
                 null,
                 "Most frequently used circuits");

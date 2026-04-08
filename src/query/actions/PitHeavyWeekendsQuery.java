@@ -15,18 +15,18 @@ public final class PitHeavyWeekendsQuery extends QueryAction {
                        re.round,
                        c.name AS circuit,
                        c.country,
-                       COUNT(ps.stop_no) AS total_pit_stops,
+                       COUNT(ps.stop_no) AS 'total pit stops',
                        COUNT(DISTINCT re.entry_id) AS starters,
                        CAST(
                            COUNT(ps.stop_no) * 1.0 / NULLIF(COUNT(DISTINCT re.entry_id), 0) AS decimal(10, 2)
-                       ) AS stops_per_entry
+                       ) AS 'stops per entry'
                 FROM race_entry re
                 JOIN race_weekend rw ON rw.year = re.year AND rw.round = re.round
                 JOIN circuits c ON c.circuit_id = rw.circuit_id
                 LEFT JOIN pit_stop ps ON ps.entry_id = re.entry_id
                 WHERE re.year = ?
                 GROUP BY re.round, c.name, c.country
-                ORDER BY total_pit_stops DESC, stops_per_entry DESC, re.round
+                ORDER BY "total pit stops" DESC, "stops per entry" DESC, re.round
                 """,
                 statement -> statement.setInt(1, year),
                 "Most pit-heavy weekends for " + year);

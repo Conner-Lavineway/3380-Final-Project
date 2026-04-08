@@ -13,11 +13,11 @@ public final class DriverCareerSummaryQuery extends QueryAction {
                 """
                 SELECT d.name AS driver,
                        d.nationality,
-                       COUNT(*) AS race_entries,
+                       COUNT(*) AS 'race entries',
                        COUNT(DISTINCT re.year) AS seasons,
-                       COUNT(DISTINCT re.team_ref) AS teams_used,
-                       MIN(re.year) AS first_year,
-                       MAX(re.year) AS last_year
+                       COUNT(DISTINCT re.team_ref) AS 'teams used',
+                       MIN(re.year) AS 'first year',
+                       MAX(re.year) AS 'last year'
                 FROM drivers d
                 JOIN race_entry re ON re.driver_ref = d.driver_ref
                 WHERE d.driver_ref = ?

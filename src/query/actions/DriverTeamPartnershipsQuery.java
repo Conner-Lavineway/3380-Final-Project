@@ -15,8 +15,8 @@ public final class DriverTeamPartnershipsQuery extends QueryAction {
                        t.name AS team,
                        COUNT(*) AS entries,
                        COUNT(DISTINCT re.year) AS seasons,
-                       MIN(re.year) AS first_year,
-                       MAX(re.year) AS last_year
+                       MIN(re.year) AS 'first year',
+                       MAX(re.year) AS 'last year'
                 FROM race_entry re
                 JOIN drivers d ON d.driver_ref = re.driver_ref
                 JOIN teams t ON t.team_ref = re.team_ref

@@ -18,7 +18,7 @@ public final class CircuitAttritionQuery extends QueryAction {
                        CAST(
                            100.0 * SUM(CASE WHEN s.description = 'Finished' OR s.description LIKE '+%' THEN 0 ELSE 1 END)
                            / COUNT(*) AS decimal(5, 2)
-                       ) AS 'retirement percent'
+                       ) AS 'retirement (%)'
                 FROM race_entry re
                 JOIN race_weekend rw ON rw.year = re.year AND rw.round = re.round
                 JOIN circuits c ON c.circuit_id = rw.circuit_id
@@ -26,7 +26,7 @@ public final class CircuitAttritionQuery extends QueryAction {
                 JOIN status s ON s.status_id = pp.status_id
                 GROUP BY c.name, c.country
                 HAVING COUNT(DISTINCT CONCAT(rw.year, '-', rw.round)) >= 10
-                ORDER BY "retirement pct" DESC, retirements DESC, circuit
+                ORDER BY "retirement (%)" DESC, retirements DESC, circuit
                 """,
                 null,
                 "Circuit attrition hotspots");

@@ -15,8 +15,8 @@ public final class TeamSeasonWorkloadQuery extends QueryAction {
                        COUNT(*) AS entries,
                        COUNT(DISTINCT re.driver_ref) AS 'drivers used',
                        COUNT(DISTINCT re.round) AS weekends,
-                       CAST(AVG(CAST(pp.num_laps AS float)) AS decimal(10, 2)) AS 'avg prix laps',
-                       CAST(AVG(CAST(sp.num_laps AS float)) AS decimal(10, 2)) AS 'avg sprint laps'
+                       CAST(AVG(CAST(pp.num_laps AS float)) AS decimal(10, 2)) AS 'average prix laps',
+                       CAST(AVG(CAST(sp.num_laps AS float)) AS decimal(10, 2)) AS 'average sprint laps'
                 FROM race_entry re
                 JOIN teams t ON t.team_ref = re.team_ref
                 LEFT JOIN prix_perf pp ON pp.entry_id = re.entry_id

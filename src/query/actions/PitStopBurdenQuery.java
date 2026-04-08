@@ -14,7 +14,7 @@ public final class PitStopBurdenQuery extends QueryAction {
                 SELECT TOP 15
                        t.name AS team,
                        COUNT(ps.stop_no) AS 'total pit stops',
-                       CAST(AVG(CAST(ps.duration_ms AS float)) / 1000.0 AS decimal(10, 3)) AS 'avg stop seconds',
+                       CAST(AVG(CAST(ps.duration_ms AS float)) / 1000.0 AS decimal(10, 3)) AS 'average stop (secs)',
                        CAST(
                            COUNT(ps.stop_no) * 1.0 / NULLIF(COUNT(DISTINCT re.entry_id), 0) AS decimal(10, 2)
                        ) AS 'stops per entry'
@@ -24,7 +24,7 @@ public final class PitStopBurdenQuery extends QueryAction {
                 WHERE re.year = ?
                 GROUP BY t.name
                 HAVING COUNT(ps.stop_no) > 0
-                ORDER BY "stops per entry" DESC, "avg stop seconds" DESC, team
+                ORDER BY "stops per entry" DESC, "average stop (secs)" DESC, team
                 """,
                 statement -> statement.setInt(1, year),
                 "Pit-stop burden by team for " + year);

@@ -20,21 +20,21 @@ public final class QualifyingPaceLeaderboardQuery extends QueryAction {
                                WHEN qr.q2_ms IS NOT NULL THEN qr.q2_ms
                                ELSE qr.q1_ms
                            END AS float
-                       )) / 1000.0 AS decimal(10, 3)) AS 'avg best qual seconds',
+                       )) / 1000.0 AS decimal(10, 3)) AS 'best qualification avg (secs)',
                        CAST(MIN(
                            CASE
                                WHEN qr.q3_ms IS NOT NULL THEN qr.q3_ms
                                WHEN qr.q2_ms IS NOT NULL THEN qr.q2_ms
                                ELSE qr.q1_ms
                            END
-                       ) / 1000.0 AS decimal(10, 3)) AS 'best single session seconds'
+                       ) / 1000.0 AS decimal(10, 3)) AS 'best single session (secs)'
                 FROM race_entry re
                 JOIN teams t ON t.team_ref = re.team_ref
                 JOIN qual_result qr ON qr.entry_id = re.entry_id
                 WHERE re.year = ?
                   AND (qr.q1_ms IS NOT NULL OR qr.q2_ms IS NOT NULL OR qr.q3_ms IS NOT NULL)
                 GROUP BY t.name
-                ORDER BY "avg best qual seconds" ASC, "timed entries" DESC, team
+                ORDER BY "best qualification avg (secs)" ASC, "timed entries" DESC, team
                 """,
                 statement -> statement.setInt(1, year),
                 "Qualifying pace leaderboard for " + year);

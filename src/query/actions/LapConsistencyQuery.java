@@ -16,8 +16,8 @@ public final class LapConsistencyQuery extends QueryAction {
                        d.name AS driver,
                        t.name AS team,
                        COUNT(li.lap_num) AS 'recorded laps',
-                       CAST(AVG(CAST(li.lap_time_ms AS float)) / 1000.0 AS decimal(10, 3)) AS 'avg lap seconds',
-                       CAST(STDEV(CAST(li.lap_time_ms AS float)) / 1000.0 AS decimal(10, 3)) AS 'lap std-dev seconds',
+                       CAST(AVG(CAST(li.lap_time_ms AS float)) / 1000.0 AS decimal(10, 3)) AS 'average lap (secs)',
+                       CAST(STDEV(CAST(li.lap_time_ms AS float)) / 1000.0 AS decimal(10, 3)) AS 'lap standard-deviation (secs)',
                        MIN(li.position) AS 'best running position'
                 FROM race_entry re
                 JOIN drivers d ON d.driver_ref = re.driver_ref
@@ -28,7 +28,7 @@ public final class LapConsistencyQuery extends QueryAction {
                   AND li.lap_time_ms IS NOT NULL
                 GROUP BY d.name, t.name
                 HAVING COUNT(li.lap_num) >= 5
-                ORDER BY "lap std-dev seconds" ASC, "avg lap seconds" ASC, driver
+                ORDER BY "lap standard-deviation (secs)" ASC, "average lap (secs)" ASC, driver
                 """,
                 statement -> {
                     statement.setInt(1, year);

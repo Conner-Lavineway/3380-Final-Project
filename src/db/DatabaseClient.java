@@ -139,10 +139,10 @@ public final class DatabaseClient implements AutoCloseable {
         validateTableName(tableName);
         return query(
                 """
-                SELECT COLUMN_NAME,
-                       DATA_TYPE,
-                       IS_NULLABLE,
-                       COALESCE(CAST(CHARACTER_MAXIMUM_LENGTH AS varchar(12)), '-') AS max_length
+                SELECT COLUMN_NAME as 'column name',
+                       DATA_TYPE as 'data type',
+                       IS_NULLABLE as 'is nullable',
+                       COALESCE(CAST(CHARACTER_MAXIMUM_LENGTH AS varchar(12)), '-') AS 'max length'
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_NAME = ?
                 ORDER BY ORDINAL_POSITION

@@ -99,7 +99,9 @@ class MultiResultGroup:
     reason: str
 
 
-def load_row_map(connection: sqlite3.Connection, query: str, key_columns: tuple[str, ...]) -> dict[tuple[Any, ...], sqlite3.Row]:
+def load_row_map(
+    connection: sqlite3.Connection, query: str, key_columns: tuple[str, ...]
+) -> dict[tuple[Any, ...], sqlite3.Row]:
     rows = connection.execute(query).fetchall()
     return {tuple(row[column] for column in key_columns): row for row in rows}
 
@@ -189,12 +191,14 @@ def write_migration_log(
     ]:
         lines.append(f"  {key}: {counts[key]}")
 
-    lines.extend([
-        "",
-        "dropped_result_rows: 0",
-        f"preserved_multi_result_groups: {len(multi_result_groups)}",
-        f"preserved_multi_result_extra_rows: {counts['preserved_multi_result_extra_rows']}",
-    ])
+    lines.extend(
+        [
+            "",
+            "dropped_result_rows: 0",
+            f"preserved_multi_result_groups: {len(multi_result_groups)}",
+            f"preserved_multi_result_extra_rows: {counts['preserved_multi_result_extra_rows']}",
+        ]
+    )
 
     if multi_result_groups:
         lines.append("")
@@ -206,7 +210,7 @@ def write_migration_log(
             lines.append(
                 "  "
                 f"year={year} round={round_number} race_id={group.race_id} "
-                f"driver_ref={driver_ref} result_ids=[{result_ids}] reason=\"{group.reason}\""
+                f'driver_ref={driver_ref} result_ids=[{result_ids}] reason="{group.reason}"'
             )
 
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -301,7 +305,9 @@ def build_entry_seeds(
     return seeds, source_counts, primary_seed_keys
 
 
-def insert_lookup_tables(source: sqlite3.Connection, target: sqlite3.Connection) -> dict[str, int]:
+def insert_lookup_tables(
+    source: sqlite3.Connection, target: sqlite3.Connection
+) -> dict[str, int]:
     circuits_rows = [
         (
             row["circuitId"],
@@ -309,7 +315,9 @@ def insert_lookup_tables(source: sqlite3.Connection, target: sqlite3.Connection)
             row["city"],
             row["country"],
         )
-        for row in source.execute("SELECT circuitId, name, city, country FROM circuits ORDER BY circuitId")
+        for row in source.execute(
+            "SELECT circuitId, name, city, country FROM circuits ORDER BY circuitId"
+        )
     ]
     target.executemany(
         "INSERT INTO circuits (circuit_id, name, city, country) VALUES (?, ?, ?, ?)",
@@ -337,7 +345,9 @@ def insert_lookup_tables(source: sqlite3.Connection, target: sqlite3.Connection)
             row["name"],
             clean_text(row["nationality"]),
         )
-        for row in source.execute("SELECT teamRef, name, nationality FROM teams ORDER BY teamId")
+        for row in source.execute(
+            "SELECT teamRef, name, nationality FROM teams ORDER BY teamId"
+        )
     ]
     target.executemany(
         "INSERT INTO teams (team_ref, name, nationality) VALUES (?, ?, ?)",
@@ -346,7 +356,9 @@ def insert_lookup_tables(source: sqlite3.Connection, target: sqlite3.Connection)
 
     status_rows = [
         (row["statusId"], row["status"])
-        for row in source.execute("SELECT statusId, status FROM status ORDER BY statusId")
+        for row in source.execute(
+            "SELECT statusId, status FROM status ORDER BY statusId"
+        )
     ]
     target.executemany(
         "INSERT INTO status (status_id, description) VALUES (?, ?)",
@@ -361,7 +373,9 @@ def insert_lookup_tables(source: sqlite3.Connection, target: sqlite3.Connection)
     }
 
 
-def insert_weekends(source: sqlite3.Connection, target: sqlite3.Connection) -> dict[str, int]:
+def insert_weekends(
+    source: sqlite3.Connection, target: sqlite3.Connection
+) -> dict[str, int]:
     race_weekend_rows = [
         (
             row["year"],
@@ -507,7 +521,8 @@ def migrate(
                 next_entry_id += 1
 
             primary_entry_id_by_driver_race = {
-                key: entry_id_map[source_key] for key, source_key in primary_seed_keys.items()
+                key: entry_id_map[source_key]
+                for key, source_key in primary_seed_keys.items()
             }
 
             target.executemany(
@@ -618,7 +633,9 @@ def migrate(
                     "lap_info": len(lap_rows),
                     "pit_stop": len(pit_rows),
                     "entries_from_qualifying": entry_source_counts["qualifying"],
-                    "entries_from_sprint_results": entry_source_counts["sprint_results"],
+                    "entries_from_sprint_results": entry_source_counts[
+                        "sprint_results"
+                    ],
                     "entries_from_results": entry_source_counts["results"],
                     "preserved_multi_result_groups": len(multi_result_groups),
                     "preserved_multi_result_extra_rows": extra_result_rows,
@@ -720,9 +737,7 @@ def main() -> int:
     for key in ordered_keys:
         print(f"{key}: {counts[key]}")
 
-    print(
-        "Note: historical multi-entry results are kept."
-    )
+    print("Note: historical multi-entry results are kept.")
     return 0
 
 

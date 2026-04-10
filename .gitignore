@@ -23,6 +23,7 @@ logs/
 .env.*
 !.env.example
 *.local
+.db-profile.mk
 
 # Python
 __pycache__/
@@ -75,6 +76,8 @@ coverage/
 tmp/
 temp/
 .cache/
+.docker-data/
+.odbc/
 
 # Nix / direnv
 .direnv/

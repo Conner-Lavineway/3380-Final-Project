@@ -130,3 +130,83 @@ This repo includes a `flake.nix` and `flake.lock` so anyone using Nix can get th
 - You can override paths with `--source-db`, `--target-db`, `--log-file`, and `--schema`
 - Historical multi-entry results are kept
 - The schema uses portable types (`DATE`, `TIME`, `VARCHAR`, `SMALLINT`) and stores lap-style durations in integer milliseconds
+
+## Local SQL Server replica
+
+- Uses the official `mcr.microsoft.com/mssql/server:2022-latest` image directly
+- It provisions a SQL Server instance on port `1433`
+- It keeps the image startup path as close to upstream defaults as possible
+- It keeps `sa` as the only user; no extra app login is created
+- It stores database files in a Docker-managed named volume so the `mssql` container user can write to them without host permission issues
+
+### Start it
+
+- Run `make db-up`
+- No `.env` file is required for local development
+- If you want to override the defaults, copy `.env.example` to `.env` and change the values there
+- The server starts with SQL Server's default system databases only; create an application database yourself if you need one
+- To stop the container, run `make db-down`
+- To reset the instance from scratch, run `make db-reset`
+
+### Local connection settings
+
+- Host: `localhost`
+- Port: `1433`
+- Database: `master` by default, unless you create another one
+- Username: `sa`
+- Password: `LocalSqlServerPassw0rd!` by default
+
+Example JDBC URL:
+
+```text
+jdbc:sqlserver://localhost:1433;database=master;user=sa;password=LocalSqlServerPassw0rd!;encrypt=true;trustServerCertificate=true;loginTimeout=30;
+```
+
+### Load the refactored SQLite replica into SQL Server
+
+- Start SQL Server with `make db-up`
+- Run `make db-load`
+- Default target DB: `cs338015`
+- To choose another target DB, run `make db-load DB_NAME=your_db_name`
+- The loader is now a Java program that reads `dbs/F1_refactored.db` through SQLite JDBC and writes to SQL Server through the Microsoft JDBC driver
+- The `Makefile` assumes `docker`, `java`, `javac`, `curl`, and `sqlcmd` are already available on your machine
+- `make deps` downloads the JDBC jars into `lib/` if they are missing
+
+## Java CLI interface
+
+- Build the Java CLI with `make cli-build`
+- Run the Java CLI with `make cli-run`
+- The build uses plain `javac` and `java`; there is no Maven workflow on this branch
+- The CLI defaults to the local SQL Server replica at `localhost:1433`, database `cs338015`
+- Override connection settings with Make variables, for example:
+
+```bash
+make cli-run DB_NAME=cs338015 DB_PASSWORD='LocalSqlServerPassw0rd!'
+```
+
+- The CLI includes:
+
+  * 12 analyst-oriented query screens
+  * safe parameterized SQL only
+  * schema inspection for every table
+  * paged table browsing for every table
+  * delete-all and repopulate maintenance actions
+
+## Make targets
+
+- `make help` shows the supported workflow
+- `make deps` downloads the JDBC jars into `lib/`
+- `make db-up` starts the local SQL Server container
+- `make db-down` stops the local SQL Server container
+- `make db-reset` removes the local SQL Server container and volume
+- `make db-load` rebuilds and loads the SQL Server database from `dbs/F1_refactored.db`
+- `make db-databases` lists visible SQL Server databases
+- `make db-tables` lists the base tables in the target database
+- `make db-show-config` prints the currently active DB connection defaults
+- `make db-use-local` switches the Makefile defaults back to the local Docker SQL Server
+- `make db-use-remote REMOTE_DB_HOST=... REMOTE_DB_USER=... REMOTE_DB_PASSWORD=...` switches the Makefile defaults to a remote SQL Server profile
+- `make cli-build` compiles the Java CLI classes into `build/classes`
+- `make cli-run` builds and launches the Java CLI
+- `make run-remote` prompts for the remote username and password at runtime and launches the Java CLI against the remote SQL Server without saving either one
+- `make clean` removes compiled Java output
+- `make deps-clean` removes the downloaded JDBC jars

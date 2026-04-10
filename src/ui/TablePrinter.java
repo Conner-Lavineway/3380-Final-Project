@@ -3,6 +3,8 @@ import java.util.List;
 
 public final class TablePrinter {
     private static final int MAX_COLUMN_WIDTH = 32;
+    private static final String NO_DATA_MESSAGE =
+            "No data was received. The requested data may not exist, or the query returned no matching rows.";
 
     private TablePrinter() {
     }
@@ -10,6 +12,7 @@ public final class TablePrinter {
     public static void print(CachedTable table) {
         if (table.columns().isEmpty()) {
             System.out.println("(no columns)");
+            System.out.println(NO_DATA_MESSAGE);
             return;
         }
 
@@ -29,6 +32,7 @@ public final class TablePrinter {
         }
         if (table.rows().isEmpty()) {
             System.out.println("(0 rows)");
+            System.out.println(NO_DATA_MESSAGE);
         } else {
             System.out.printf("(%d rows)%n", table.rows().size());
         }

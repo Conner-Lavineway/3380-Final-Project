@@ -68,13 +68,25 @@ public final class DatabaseClient implements AutoCloseable {
     }
 
     public List<Option> listYears() throws SQLException {
+        return searchYears("");
+    }
+
+    public List<Option> searchYears(String searchTerm) throws SQLException {
         return optionsFromQuery(
                 """
-                SELECT DISTINCT year AS id, CAST(year AS varchar(10)) AS label
+                SELECT TOP 25
+                       CAST(year AS varchar(10)) AS id,
+                       CAST(year AS varchar(10)) AS label
                 FROM race_weekend
+                WHERE ? = '' OR CAST(year AS varchar(10)) LIKE ?
+                GROUP BY year
                 ORDER BY year DESC
                 """,
-                null);
+                statement -> {
+                    String normalized = searchTerm == null ? "" : searchTerm.trim();
+                    statement.setString(1, normalized);
+                    statement.setString(2, "%" + normalized + "%");
+                });
     }
 
     public List<Option> listRoundsForYear(int year) throws SQLException {

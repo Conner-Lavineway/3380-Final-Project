@@ -8,8 +8,15 @@ public final class QuerySupport {
     }
 
     public static int selectYear(DatabaseClient database, ConsolePrompter prompter) throws SQLException {
-        List<DatabaseClient.Option> years = database.listYears();
-        return Integer.parseInt(selectOption(prompter, "Choose a season", years).id());
+        while (true) {
+            String search = prompter.prompt("Season search (blank lists all seasons): ");
+            List<DatabaseClient.Option> years = database.searchYears(search);
+            if (years.isEmpty()) {
+                System.out.println("No seasons matched that search.");
+                continue;
+            }
+            return Integer.parseInt(selectOption(prompter, "Choose a season", years).id());
+        }
     }
 
     public static int selectRound(DatabaseClient database, ConsolePrompter prompter, int year) throws SQLException {
